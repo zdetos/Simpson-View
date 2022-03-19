@@ -27,7 +27,8 @@ Installation
 ### Linux and macOS ###
 
 To install simview, copy the Simpson-View directory to your favourite location.
-simview can then be run by executing 'python3 /InstallPath/simview.py'.
+simview can then be run by executing 
+```python3 /InstallPath/simview.py```
 Aliases or symlinks can be used to create a shortcut to start the program.
 
 ### Windows ###
