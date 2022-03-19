@@ -35,4 +35,19 @@ Aliases or symlinks can be used to create a shortcut to start the program.
 
 Users that have installed python via the Anaconda progrom descibed above can do the following:
 To install simview, copy the Simpson-View directory to your favourite location.
-Start "Anaconda prompt" and execute 'python C:\InstallPath\simview.py'
+Start "Anaconda prompt" and execute ```python C:\InstallPath\simview.py```
+
+Configure SIMPSON executable
+------------------------------
+
+Edit file xxx  to set properly these values
+```
+SIMPSON_EXECUTABLE="C:\\data\\workspace_2021\\simpson-5\\Debug\\simpson-5.exe"
+SIMPSON_TCL_LIBRARY=""
+SIMPSON_LD_LIBRARY_PATH=""
+LOCALE_ENCODING="cp852"
+```
+These values depend on your environment...
+To find out your LOCALE_ENCODING on linux, execute ```locale``` and read the encoding as the suffix to variables displayed (UTF-8).
+On windows, open cmd.exe and execute ```chcp``` (cp852 is czech speciality)
+ 
