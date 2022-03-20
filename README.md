@@ -49,5 +49,5 @@ LOCALE_ENCODING="cp852"
 ```
 These values depend on your environment...
 To find out your LOCALE_ENCODING on linux, execute ```locale``` and read the encoding as the suffix to variables displayed (UTF-8).
-On windows, open cmd.exe and execute ```chcp``` (cp852 is czech speciality)
+On windows, open cmd.exe and execute ```chcp``` (cp852 is code page used on my czech laptop)
  

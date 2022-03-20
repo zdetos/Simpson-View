@@ -465,6 +465,7 @@ class MainWindow(QMainWindow):
             self.simpson_output_append(SIMPSON_EXECUTABLE+" "+inputfile+"\n")
             env = self.simpson_process.processEnvironment()
             env.insert("TCL_LIBRARY",SIMPSON_TCL_LIBRARY)
+            env.insert("LD_LIBRARY_PATH",SIMPSON_LD_LIBRARY_PATH)
             self.simpson_process.setProcessEnvironment(env)
             self.simpson_process.setWorkingDirectory(workdir)
             self.simpson_process.start(SIMPSON_EXECUTABLE, [inputfile])
@@ -526,7 +527,8 @@ class MainWindow(QMainWindow):
         charformat = QTextCharFormat()
         charformat.setFontWeight(QFont.Bold)
         charformat.setFontItalic(True)
-        if self.simpson_process.exitStatus() == QProcess.CrashExit:
+        errorstatus = (self.simpson_process.exitStatus() == QProcess.CrashExit) or ( (self.simpson_process.exitStatus() == QProcess.NormalExit) and (self.simpson_process.exitCode() != 0) )
+        if errorstatus:
             charformat.setForeground(Qt.red)
             self.simpsonoutput.setCurrentCharFormat(charformat)
             self.simpson_output_append("Process crashed!\n\n")
@@ -536,18 +538,21 @@ class MainWindow(QMainWindow):
         self.simpsonoutput.setCurrentCharFormat(usual_charformat)
         self.simpsonoutput.setStyleSheet("background-color: rgb(255, 255, 255)")
         workdir = self.simpson_process.workingDirectory()
-        print(workdir)
+        #print(workdir)
         self.simpson_process = None
         # extract fidspe filename
-        fulloutput = self.simpsonoutput.toPlainText()
-        for textline in reversed(fulloutput.splitlines()):
-            if textline.startswith("Saved file:"):
-                # the last word is our filename
-                filename = textline.split(' ')[-1]
-                filename = os.path.join(workdir,filename)
-                print(filename)
-                self.load_fidspe(filename)
-                break
+        if not errorstatus:
+            fulloutput = self.simpsonoutput.toPlainText()
+            for textline in reversed(fulloutput.splitlines()):
+                if textline.startswith("simview:"):
+                    # remove the initial keyword and split into list of filenames
+                    names = textline[len("simview:"):].strip()
+                    #print(names)
+                    for filename in names.split(' '):
+                        fullname = os.path.join(workdir,filename)
+                        #print(fullname)
+                        self.load_fidspe(fullname)
+                    break
 
 
     # example
@@ -1233,9 +1238,11 @@ def load_simpson_fidspe(fileName):
             line =  file.readline()
             line.strip()
             if line[:-1] != "SIMP":
-                print("Not simps file")
+                print("Not simpson file:")
+                print(fileName)
             else:
-                print("is simp file")
+                #print("is simp file")
+                pass
     
             # read the file
             info = {}
@@ -1250,7 +1257,7 @@ def load_simpson_fidspe(fileName):
                     ll = line.split("=")
                     #print("Line >"+line+"< is ",ll)
                     info[ll[0]]=ll[1]
-            print(info)
+            #print(info)
             re = []
             im = []
             if 'NP' in info:
@@ -1284,11 +1291,11 @@ def load_simpson_fidspe(fileName):
         # print("Lines: ",len(text))
         # for i in range(1,10):
         #     print("   ",text[i])
-        print(info)
+        #print(info)
         # create x axis
         if info['TYPE'] == "SPE":
             corr = info['SW']/2-info['REF']
-            stx = info['SW']/info['NP']
+            stx = info['SW']/(info['NP']-1)
         elif info['TYPE'] == "FID":
             stx = 1.0e3/info['SW']
             corr = 0
