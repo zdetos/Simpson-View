@@ -1,0 +1,12 @@
+<b> Load SIMPSON input file </b>
+<br> - File -> New and type simpson script
+<br> - File -> Open script from disc
+<br> - Examples -> select example file
+<br><b> Run SIMPSON </b>
+<br> - Save the code and use menu Process -> Run
+<br> - Observe output in SIMPSON output window
+<br> - Files indicated in output with "simview:" will be loaded to chart
+<br><b> Kill SIMPSON </b>
+<br> Process -> Kill stops current calculation
+<br><b> Clear output </b>
+<br> Process -> Clear output deletes all text in SIMPSON output

@@ -1,0 +1,24 @@
+<b> Load FID/SPE </b>
+<br> Load SIMPSON spectrum or FID using File -> Load FID/SPE menu
+<br><b> Zoom </b>
+<br> Draw rectangle with mouse left click
+<br><b> Pan </b>
+<br> Drag mouse with right click
+<br><b> Scale y axis </b>
+<br> Mouse wheel up or down
+<br><b> Scale x axis </b>
+<br> Hold Shift and mouse wheel up or down
+<br><b> Reset </b>
+<br> right double click
+<br><b> Hide/Show line </b>
+<br> Left click on line in legend
+<br><b> Select line </b>
+<br> Left click on text in legend
+<br><b> Delete line </b>
+<br> Right click on text in legend or Chart -> Clear selected line
+<br><b> Crosshair </b>
+  <br> - Activated by Chart checkbox 
+  <br> - Crosshair sticks to selected line
+  <br> - Left double click starts/cancels distance measurement
+<br><b> Reset Chart </b>
+<br> Using menu Chart -> Clear all lines

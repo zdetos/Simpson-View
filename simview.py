@@ -127,7 +127,8 @@ class MainWindow(QMainWindow):
         toolcursor = QCheckBox("Crosshair")
         toolcursor.setChecked(False)
         toolcursor.setToolTip("Toggle crosshair cursor")
-        toolcursor.stateChanged.connect(self.canvas.handle_crosshair_cursor)
+        toolcursor.clicked.connect(self.canvas.handle_crosshair_cursor)
+        self.canvas.addToolcursor(toolcursor)
         chartbar.addWidget(toolcursor)
         # toolexport = QPushButton("Export")
         # toolexport.setStatusTip("Save figure to file")
@@ -563,13 +564,33 @@ class MainWindow(QMainWindow):
             #print("Example item selected: " + filename)
             self.load_input_file(filename, isExample=True)
 
-    # example
+    # HELP
     def help_chart(self):
-        print("Triggered Chart help")
+        try:
+            with open("help_text_chart.txt","r") as f:
+                text = f.read()
+        except Exception as e:
+            self.dialog_critical(str(e))
+            text = "No HELP text found"    
+        dlg = QMessageBox(self)
+        dlg.setWindowTitle("Using Chart")
+        dlg.setText(text)
+        # showing it
+        dlg.show()
 
-    # example
+    # HELP
     def help_process(self):
-        print("Triggered Process help")
+        try:
+            with open("help_text_process.txt","r") as f:
+                text = f.read()
+        except Exception as e:
+            self.dialog_critical(str(e))
+            text = "No HELP text found"    
+        dlg = QMessageBox(self)
+        dlg.setWindowTitle("Using Chart")
+        dlg.setText(text)
+        # showing it
+        dlg.show()
 
     # Clear selected line
     def clear_selected(self):
@@ -758,6 +779,7 @@ class MplCanvas(FigureCanvasQTAgg):
         self.defaultYlimits = (0,1)  # limits of full plot
         self.pick_event_lock = False # to handle legend pick and avoid mouseButton actions on axes
         self.crosshair_cursor = None # to handle active crosshair cursor
+        self.toolcursor = None  # to handle state of Crosshair checkbox
 
     def mButtonPress(self, event):
         # print("canvas mouse event:")
@@ -1086,7 +1108,13 @@ class MplCanvas(FigureCanvasQTAgg):
         crosshair_action = QAction("Crosshair cursor", self)
         crosshair_action.triggered.connect(self.handle_crosshair_cursor)
         menu.addAction(crosshair_action)
+        #xrev_action = QAction("Reverse x-axis", self)
+        #xrev_action.triggered.connect(self.handle_xrev)
+        #menu.addAction(xrev_action)
         menu.exec(QCursor.pos())
+
+    def addToolcursor(self, tc):
+        self.toolcursor = tc
         
     def handle_crosshair_cursor(self):
         if self.crosshair_cursor is None:
@@ -1097,6 +1125,7 @@ class MplCanvas(FigureCanvasQTAgg):
                 plotlines = self.get_plotlines()
                 cursor.xx, cursor.yy = plotlines[self.selected_line].get_data()
             self.crosshair_cursor = cursor
+            self.toolcursor.setChecked(True)
         else:
             # cancel cursor regime (destructor of cursor)
             # print("cursor OFF")
@@ -1106,7 +1135,12 @@ class MplCanvas(FigureCanvasQTAgg):
             # self.mpl_disconnect(self.crosshair_cursor.cid)
             self.crosshair_cursor.remove_internals()
             self.crosshair_cursor = None
+            self.toolcursor.setChecked(False)
         
+    def handle_xrev(self):
+        print("revx not compatible with zoom and other things...")
+        self.axes.invert_xaxis()
+            
 
     def export_figure(self):
         print("save figure to file")
@@ -1120,7 +1154,7 @@ class MplCanvas(FigureCanvasQTAgg):
         self.fig.savefig(filename)
         
     def edit_figure(self):
-        print("edit figure properties")
+        print("edit figure properties not implemented")
 
 class Cursor:
     """
