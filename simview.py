@@ -461,6 +461,7 @@ class MainWindow(QMainWindow):
             #self.simpsonoutput.appendPlainText("Executing %s\n\n"  %inputfile)
             self.simpson_output_append("Executing %s\n"  %inputfile)
             self.simpsonoutput.setCurrentCharFormat(usual_charformat)
+            self.simpson_output_append("Directory: %s\n"  %workdir)
             # execute input file
             # self.simpson_process.start("python3", ['dummy_script.py'])  # used during test phase
             self.simpson_output_append(SIMPSON_EXECUTABLE+" "+inputfile+"\n")
