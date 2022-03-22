@@ -4,6 +4,15 @@ Created on Sun Nov  7 20:08:04 2021
 
 @author: Zdeněk Tošner
 """
+# Enter simpson executable related information here
+SIMPSON_EXECUTABLE="C:\\data\\workspace_2021\\simpson-5\\Debug\\simpson-5.exe"
+SIMPSON_TCL_LIBRARY=""
+SIMPSON_LD_LIBRARY_PATH=""
+SIMPSON_EXAMPLES_PATH="C:\\data\\workspace\\simpson_GUI\\newer\\examples"
+LOCALE_ENCODING="cp852"  # to find out on windows, execute in cmd.exe command chcp
+
+
+# -------- DO  NOT  EDIT  BELOW  THIS  LINE  -----------
 
 from PyQt5.QtCore import Qt, QRegExp, QProcess
 from PyQt5.QtGui import QFont, QSyntaxHighlighter, QTextCharFormat, QFontDatabase, QCursor
@@ -15,17 +24,7 @@ matplotlib.use('Qt5Agg')
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
 import numpy as np
-#import time
 
-#SIMPSON_EXECUTABLE="cmd.exe /C \"C:\\Program Files (x86)\SIMPSON\simpson.exe\" "
-#SIMPSON_EXECUTABLE="\"C:\\Program Files (x86)\SIMPSON\simpson.exe\" "
-SIMPSON_EXECUTABLE="C:\\data\\workspace_2021\\simpson-5\\Debug\\simpson-5.exe"
-#SIMPSON_EXECUTABLE="cmd.exe /C set"
-#SIMPSON_TCL_LIBRARY="C:\\Program Files (x86)\\SIMPSON\\tcl8.6"
-SIMPSON_TCL_LIBRARY=""
-SIMPSON_LD_LIBRARY_PATH=""
-SIMPSON_EXAMPLES_PATH="C:\\data\\workspace\\simpson_GUI\\newer\\examples"
-LOCALE_ENCODING="cp852"  # to find out on windows, execute in cmd.exe command chcp
 
 class MainWindow(QMainWindow):
     
@@ -588,7 +587,7 @@ class MainWindow(QMainWindow):
             self.dialog_critical(str(e))
             text = "No HELP text found"    
         dlg = QMessageBox(self)
-        dlg.setWindowTitle("Using Chart")
+        dlg.setWindowTitle("Using Process")
         dlg.setText(text)
         # showing it
         dlg.show()
