@@ -1,5 +1,30 @@
 # simview
 python GUI for simpson
+Shortcuts
+------------
+Ctrl + N  New File
+Ctrl + O  Open File
+Ctrl + S  Save File
+Ctrl + Shift + S  Save as
+Ctrl + I Import FID
+
+Standard editing shortcuts...
+Ctrl + C  Copy
+Ctrl + X  Cut
+Ctrl + V  Paste
+Ctrl + A  Select all
+Ctrl + Z  Undo
+Ctrl + Y  Redo
+
+Ctrl + R  Run 
+Ctrl + K  Kill
+Ctrl + L  Clear Log
+
+Ctrl + P  Purge selected line
+Ctrl + Shift + P Purge all lines  
+
+Ctrl + Q  Toggle crosshair
+Ctrl + E  Export graphic
 
 Requirements
 ------------
