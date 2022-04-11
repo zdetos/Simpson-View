@@ -13,9 +13,9 @@ Ctrl + L  Clear Log
 
 
 
-Ctrl + P  Purge selected line
+Ctrl + D  Delete selected line
 
-Ctrl + Shift + P Purge all lines  
+Ctrl + Shift + D Delete all lines  
 
 
 
