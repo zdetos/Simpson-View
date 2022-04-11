@@ -1,14 +1,13 @@
 # -*- coding: utf-8 -*-
 """
 Created on Sun Nov  7 20:08:04 2021
-
 @author: Zdeněk Tošner
 Changelog:
 v1.0 by Zdeněk Tošner
 v1.1 added shortcut to almost all functions for faster workflow.
 """
 # Enter simpson executable related information here
-SIMPSON_EXECUTABLE="C:\\data\\workspace_2021\\simpson-5\\Debug\\simpson-5.exe"
+SIMPSON_EXECUTABLE=""
 SIMPSON_TCL_LIBRARY=""
 SIMPSON_LD_LIBRARY_PATH=""
 SIMPSON_EXAMPLES_PATH="C:\\data\\workspace\\simpson_GUI\\newer\\examples"
@@ -1389,3 +1388,4 @@ if __name__ == '__main__':
     window = MainWindow()
     # loop
     sys.exit(app.exec())
+
