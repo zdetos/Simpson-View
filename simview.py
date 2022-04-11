@@ -263,17 +263,30 @@ class MainWindow(QMainWindow):
         # creating Chart menu
         clear_menu = self.menuBar().addMenu("&Chart")
         # creating clear selected chart item
-        clear_action = QAction("Clear (Purge) selected line", self)
-        clear_action.setShortcut('Ctrl+P')
+        clear_action = QAction("Delete selected line", self)
+        clear_action.setShortcut('Ctrl+D')
         clear_action.setStatusTip("Clear selected line")
         clear_action.triggered.connect(self.clear_selected)
         clear_menu.addAction(clear_action)
         # creating clear all item
-        clearall_action = QAction("Clear (Purge) all lines", self)
+        clearall_action = QAction("Delete all lines", self)
         clearall_action.setStatusTip("Clear all lines")
-        clearall_action.setShortcut('Ctrl+Shift+P')
+        clearall_action.setShortcut('Ctrl+Shift+D')
         clearall_action.triggered.connect(self.clear_all)
         clear_menu.addAction(clearall_action)
+
+        # creating a Help menu
+        help_menu = self.menuBar().addMenu("&Help")
+        # help on chart
+        chart_help_action = QAction("Using Chart", self)
+        chart_help_action.setStatusTip("How to use Chart")
+        chart_help_action.triggered.connect(self.help_chart)
+        help_menu.addAction(chart_help_action)
+        # help on process
+        process_help_action = QAction("Using Process", self)
+        process_help_action.setStatusTip("How to use Process menu")
+        process_help_action.triggered.connect(self.help_process)
+        help_menu.addAction(process_help_action)
 
         # creating a Help menu
         help_menu = self.menuBar().addMenu("&Help")
