@@ -1,23 +1,29 @@
 # -*- coding: utf-8 -*-
 """
 Created on Sun Nov  7 20:08:04 2021
-
 @author: Zdeněk Tošner
+Changelog:
+v1.0 by Zdeněk Tošner
+v1.1 added shortcut to almost all functions for faster workflow.
 """
 # Enter simpson executable related information here
-SIMPSON_EXECUTABLE="C:\\data\\workspace_2021\\simpson-5\\Debug\\simpson-5.exe"
+SIMPSON_EXECUTABLE=""
 SIMPSON_TCL_LIBRARY=""
 SIMPSON_LD_LIBRARY_PATH=""
 SIMPSON_EXAMPLES_PATH="C:\\data\\workspace\\simpson_GUI\\newer\\examples"
 LOCALE_ENCODING="cp852"  # to find out on windows, execute in cmd.exe command chcp
 
+#These settings worked flawlessly on a fresh Ubuntu 21.04 install
+
+#SIMPSON_EXECUTABLE="/usr/share/simpson/simpson4.2.1"
+#SIMPSON_TCL_LIBRARY="/usr/share/tcltk/tcl8.6"
+#SIMPSON_LD_LIBRARY_PATH="/usr/share/simpson"
 
 # -------- DO  NOT  EDIT  BELOW  THIS  LINE  -----------
 
 from PyQt5.QtCore import Qt, QRegExp, QProcess
-from PyQt5.QtGui import QFont, QSyntaxHighlighter, QTextCharFormat, QFontDatabase, QCursor
-from PyQt5.QtWidgets import (QApplication, QMainWindow, QVBoxLayout, QPlainTextEdit, QLabel, QFrame, QSplitter, QToolBar, 
-                             QCheckBox, QAction, QMessageBox, QFileDialog, QLineEdit, QMenu, QSizePolicy)
+from PyQt5.QtGui import QFont, QSyntaxHighlighter, QTextCharFormat, QFontDatabase, QCursor, QKeySequence
+from PyQt5.QtWidgets import (QApplication, QMainWindow, QVBoxLayout, QPlainTextEdit, QLabel, QFrame, QSplitter, QToolBar, QCheckBox, QAction, QMessageBox, QFileDialog, QLineEdit, QMenu, QSizePolicy, QShortcut)
 import sys, os, glob
 import matplotlib
 matplotlib.use('Qt5Agg')
@@ -123,9 +129,10 @@ class MainWindow(QMainWindow):
         self.addToolBar(editorbar)
         chartbar = QToolBar("Chart tools")
         chartbar.addWidget(toolbarspacer)
-        toolcursor = QCheckBox("Crosshair")
+        toolcursor = QCheckBox("Crosshair ")
         toolcursor.setChecked(False)
-        toolcursor.setToolTip("Toggle crosshair cursor")
+        toolcursor.setShortcut('Ctrl+Q')
+        toolcursor.setToolTip("Toggle crosshair cursor Crtl+Q")
         toolcursor.clicked.connect(self.canvas.handle_crosshair_cursor)
         self.canvas.addToolcursor(toolcursor)
         chartbar.addWidget(toolcursor)
@@ -135,7 +142,8 @@ class MainWindow(QMainWindow):
         # chartbar.addWidget(toolexport)
         
         print_action = QAction("Export", self)
-        print_action.setToolTip("Save figure to file")
+        print_action.setToolTip("Save figure to file Ctrl+E")
+        print_action.setShortcut('Ctrl+E')
         print_action.triggered.connect(self.canvas.export_figure)
         chartbar.addAction(print_action)
         self.addToolBar(chartbar)
@@ -144,6 +152,7 @@ class MainWindow(QMainWindow):
         file_menu = self.menuBar().addMenu("&File")
         # creating New file action
         new_file_action = QAction("New", self)
+        new_file_action.setShortcut('Ctrl+N')
         # setting status tip
         new_file_action.setStatusTip("New input file")
         # adding action to the open file
@@ -153,21 +162,25 @@ class MainWindow(QMainWindow):
         # creating an open file action
         open_file_action = QAction("Open", self)
         open_file_action.setStatusTip("Open file")
+        open_file_action.setShortcut('Ctrl+O')
         open_file_action.triggered.connect(self.file_open)
         file_menu.addAction(open_file_action)
         # creating an Save file action
         save_file_action = QAction("Save", self)
         save_file_action.setStatusTip("Save file")
+        save_file_action.setShortcut('Ctrl+S')
         save_file_action.triggered.connect(self.file_save)
         file_menu.addAction(save_file_action)
         # creating an Save As file action
         saveas_file_action = QAction("Save As", self)
         saveas_file_action.setStatusTip("Save file As")
+        saveas_file_action.setShortcut('Ctrl+Shift+S')
         saveas_file_action.triggered.connect(self.file_saveas)
         file_menu.addAction(saveas_file_action)
         # load FID/SPE files intographics
         file_menu.addSeparator()
-        load_graph_data_action = QAction("Load FID/SPE", self)
+        load_graph_data_action = QAction("Import FID/SPE", self)
+        load_graph_data_action.setShortcut('Ctrl+I')
         load_graph_data_action.setStatusTip("Load FID/SPE file to display")
         load_graph_data_action.triggered.connect(self.file_load_fidspe)
         file_menu.addAction(load_graph_data_action)
@@ -181,31 +194,37 @@ class MainWindow(QMainWindow):
         edit_menu = self.menuBar().addMenu("&Edit")
         # creating Cut edit action
         cut_edit_action = QAction("Cut", self)
+        cut_edit_action.setShortcut('Ctrl+X')
         cut_edit_action.setStatusTip("Cut selected text")
         cut_edit_action.triggered.connect(self.editor.cut)
         edit_menu.addAction(cut_edit_action)
         # creating Copy edit action
         copy_edit_action = QAction("Copy", self)
+        copy_edit_action.setShortcut('Ctrl+C')
         copy_edit_action.setStatusTip("Copy selected text")
         copy_edit_action.triggered.connect(self.editor.copy)
         edit_menu.addAction(copy_edit_action)
         # creating Paste edit action
         paste_edit_action = QAction("Paste", self)
+        paste_edit_action.setShortcut('Ctrl+V')
         paste_edit_action.setStatusTip("Paste copied text")
         paste_edit_action.triggered.connect(self.editor.paste)
         edit_menu.addAction(paste_edit_action)
         # creating Select All edit action
         selectall_edit_action = QAction("Select All", self)
+        selectall_edit_action.setShortcut('Ctrl+A')
         selectall_edit_action.setStatusTip("Select All text")
         selectall_edit_action.triggered.connect(self.editor.selectAll)
         edit_menu.addAction(selectall_edit_action)
         # creating Undo edit action
         undo_edit_action = QAction("Undo", self)
+        undo_edit_action.setShortcut('Ctrl+Z')
         undo_edit_action.setStatusTip("Undo last change")
         undo_edit_action.triggered.connect(self.editor.undo)
         edit_menu.addAction(undo_edit_action)
         # creating Redo edit action
         redo_edit_action = QAction("Redo", self)
+        redo_edit_action.setShortcut('Ctrl+Y')
         redo_edit_action.setStatusTip("Cancel last undo action")
         redo_edit_action.triggered.connect(self.editor.redo)
         edit_menu.addAction(redo_edit_action)
@@ -214,16 +233,19 @@ class MainWindow(QMainWindow):
         process_menu = self.menuBar().addMenu("&Process")
         # creating Run process action
         run_process_action = QAction("Run", self)
+        run_process_action.setShortcut('Ctrl+R')
         run_process_action.setStatusTip("Execute current input")
         run_process_action.triggered.connect(self.process_run)
         process_menu.addAction(run_process_action)
         # creating Kill process action
         kill_process_action = QAction("Kill", self)
+        kill_process_action.setShortcut('Ctrl+K')
         kill_process_action.setStatusTip("Kill running process")
         kill_process_action.triggered.connect(self.process_kill)
         process_menu.addAction(kill_process_action)
         # creating Clear output process action
-        clearoutput_process_action = QAction("Clear output", self)
+        clearoutput_process_action = QAction("Clear output log", self)
+        clearoutput_process_action.setShortcut('Ctrl+L')
         clearoutput_process_action.setStatusTip("Clear SIMPSON output window")
         clearoutput_process_action.triggered.connect(self.process_clearoutput)
         process_menu.addAction(clearoutput_process_action)
@@ -240,15 +262,30 @@ class MainWindow(QMainWindow):
         # creating Chart menu
         clear_menu = self.menuBar().addMenu("&Chart")
         # creating clear selected chart item
-        clear_action = QAction("Clear selected line", self)
+        clear_action = QAction("Delete selected line", self)
+        clear_action.setShortcut('Ctrl+D')
         clear_action.setStatusTip("Clear selected line")
         clear_action.triggered.connect(self.clear_selected)
         clear_menu.addAction(clear_action)
         # creating clear all item
-        clearall_action = QAction("Clear all lines", self)
+        clearall_action = QAction("Delete all lines", self)
         clearall_action.setStatusTip("Clear all lines")
+        clearall_action.setShortcut('Ctrl+Shift+D')
         clearall_action.triggered.connect(self.clear_all)
         clear_menu.addAction(clearall_action)
+
+        # creating a Help menu
+        help_menu = self.menuBar().addMenu("&Help")
+        # help on chart
+        chart_help_action = QAction("Using Chart", self)
+        chart_help_action.setStatusTip("How to use Chart")
+        chart_help_action.triggered.connect(self.help_chart)
+        help_menu.addAction(chart_help_action)
+        # help on process
+        process_help_action = QAction("Using Process", self)
+        process_help_action.setStatusTip("How to use Process menu")
+        process_help_action.triggered.connect(self.help_process)
+        help_menu.addAction(process_help_action)
 
         # creating a Help menu
         help_menu = self.menuBar().addMenu("&Help")
@@ -1351,3 +1388,4 @@ if __name__ == '__main__':
     window = MainWindow()
     # loop
     sys.exit(app.exec())
+

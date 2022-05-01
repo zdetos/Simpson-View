@@ -1,6 +1,32 @@
 # simview
 python GUI for simpson
 
+
+
+Shortcuts
+------------
+Ctrl + R  Run
+
+Ctrl + K  Kill
+
+Ctrl + L  Clear Log
+
+
+
+Ctrl + D  Delete selected line
+
+Ctrl + Shift + D Delete all lines  
+
+
+
+Ctrl + Q  Toggle crosshair
+
+Ctrl + E  Export graphic
+
+rest is explained in the menu bar; Edit in simview.py file by searching for ```setShortcut('Ctrl+1')``` where 1 represents the letter you want to change. Change it, save it, run it. Should be easy. Description is automatically changed.
+
+
+
 Requirements
 ------------
 
