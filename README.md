@@ -42,6 +42,10 @@ On Ubuntu and Debian these packages can be installed using the package manager:
 ```
 sudo apt-get install python3 python3-numpy python3-matplotlib python3-pyqt5 
 ```
+On openSUSE I just did (Oct 31,2022)
+```
+zypper install python310 python310-numpy python310-matplotlib python310-matplotlib-qt5 python310-qt5
+```
 
 On Windows (and macOS) these packages can easily be installed by downloading [Anaconda](https://www.anaconda.com/distribution/).
 It is a bit bulky but you get all popular python tools. During installation, you may enable the 
