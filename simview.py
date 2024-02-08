@@ -7,10 +7,10 @@ v1.0 by Zdeněk Tošner
 v1.1 added shortcut to almost all functions for faster workflow.
 """
 # Enter simpson executable related information here
-SIMPSON_EXECUTABLE=""
-SIMPSON_TCL_LIBRARY=""
+SIMPSON_EXECUTABLE="C:\\data\\vypocty\\local\\simpson_win_10\\simpson-w10.exe"
+SIMPSON_TCL_LIBRARY="C:\\data\\vypocty\\local\\simpson_win_10\\tcl8.6"
 SIMPSON_LD_LIBRARY_PATH=""
-SIMPSON_EXAMPLES_PATH="C:\\data\\workspace\\simpson_GUI\\newer\\examples"
+SIMPSON_EXAMPLES_PATH="C:\\data\\workspace_before_2021\\simpson_GUI\\newer\\examples"
 LOCALE_ENCODING="cp852"  # to find out on windows, execute in cmd.exe command chcp
 
 #These settings worked flawlessly on a fresh Ubuntu 21.04 install
@@ -53,8 +53,9 @@ class MainWindow(QMainWindow):
         self.editor.setLineWrapMode(0)
         # setting font to the editor
         # fixedfont = QFontDatabase.systemFont(QFontDatabase.FixedFont)
-        # fixedfont.setPointSize(11)
-        # self.editor.setFont(fixedfont)
+        fixedfont = QFont()
+        fixedfont.setPointSize(11)
+        self.editor.setFont(fixedfont)
         # to indicate text change, call special function to indicate it in the title
         self.editor.document().modificationChanged.connect(self.editor_text_changed)
         # connect syntax highlighter
@@ -273,19 +274,6 @@ class MainWindow(QMainWindow):
         clearall_action.setShortcut('Ctrl+Shift+D')
         clearall_action.triggered.connect(self.clear_all)
         clear_menu.addAction(clearall_action)
-
-        # creating a Help menu
-        help_menu = self.menuBar().addMenu("&Help")
-        # help on chart
-        chart_help_action = QAction("Using Chart", self)
-        chart_help_action.setStatusTip("How to use Chart")
-        chart_help_action.triggered.connect(self.help_chart)
-        help_menu.addAction(chart_help_action)
-        # help on process
-        process_help_action = QAction("Using Process", self)
-        process_help_action.setStatusTip("How to use Process menu")
-        process_help_action.triggered.connect(self.help_process)
-        help_menu.addAction(process_help_action)
 
         # creating a Help menu
         help_menu = self.menuBar().addMenu("&Help")
