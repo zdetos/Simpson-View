@@ -21,9 +21,9 @@ LOCALE_ENCODING="cp852"  # to find out on windows, execute in cmd.exe command ch
 
 # -------- DO  NOT  EDIT  BELOW  THIS  LINE  -----------
 
-from PyQt5.QtCore import Qt, QRegExp, QProcess
+from PyQt5.QtCore import Qt, QRegExp, QProcess, QLocale
 from PyQt5.QtGui import QFont, QSyntaxHighlighter, QTextCharFormat, QFontDatabase, QCursor, QKeySequence
-from PyQt5.QtWidgets import (QApplication, QMainWindow, QVBoxLayout, QPlainTextEdit, QLabel, QFrame, QSplitter, QToolBar, QCheckBox, QAction, QMessageBox, QFileDialog, QLineEdit, QMenu, QSizePolicy, QShortcut)
+from PyQt5.QtWidgets import (QApplication, QMainWindow, QVBoxLayout, QPlainTextEdit, QLabel, QFrame, QSplitter, QToolBar, QCheckBox, QAction, QMessageBox, QFileDialog, QLineEdit, QMenu, QSizePolicy, QShortcut, QInputDialog)
 import sys, os, glob
 import matplotlib
 matplotlib.use('Qt5Agg')
@@ -632,11 +632,13 @@ class MainWindow(QMainWindow):
         print("file_load_wave")
         t = np.linspace(0, 1)
         frq = 5*np.random.rand()
-        y1 = 10*np.random.rand() * np.sin(2*np.pi*t*frq)
+        y1 = 10*np.random.rand() * np.exp(1j*2*np.pi*t*frq)
+        userdata = {'scale':1.0,'cplx_data': y1, 'show':"Real"}
+        y1 = np.real(y1)
         lbl = "%.3f" % frq
         # N E E D  to handle data type FID or SPE here
         self.canvas.simpson_data_type = 'SPE'
-        self.canvas.add_simpson_data(t,y1,lbl)
+        self.canvas.add_simpson_data(t,y1,lbl,userdata)
 
     def file_load_fidspe(self):
         print("file_load_fidspe")
@@ -650,7 +652,9 @@ class MainWindow(QMainWindow):
         self.load_fidspe(filename)
         
     def load_fidspe(self, filename):
-        xx, yy, datatype = load_simpson_fidspe(filename)
+        xx, cplx, datatype = load_simpson_fidspe(filename)
+        yy = np.real(cplx)
+        userdata = {'scale':1.0,'cplx_data': cplx, 'show':"Real"}
         # N E E D  to handle data type FID or SPE here
         if self.canvas.simpson_data_type is None:
             self.canvas.simpson_data_type = datatype
@@ -659,7 +663,7 @@ class MainWindow(QMainWindow):
                 self.dialog_critical("Can't display FID and SPE together, clear the chart first")
                 return
         lbl = os.path.basename(filename)
-        self.canvas.add_simpson_data(xx,yy,lbl)
+        self.canvas.add_simpson_data(xx,yy,lbl,userdata)
 
 
 
@@ -932,23 +936,44 @@ class MplCanvas(FigureCanvasQTAgg):
             xmaxlim = pos_x + scale*(xlim[1]-pos_x)
             self.axes.set_xlim(xminlim, xmaxlim)
         else:
-            # scaling y-axis
-            ylim = self.axes.get_ylim()
-            pos_y = event.ydata
-            yminlim = pos_y - scale*(pos_y-ylim[0])
-            ymaxlim = pos_y + scale*(ylim[1]-pos_y)
-            self.axes.set_ylim(yminlim, ymaxlim)
+            if self.selected_line is not None:
+                # scaling selected line data
+                #print("scaling selected line %d by %g" % (self.selected_line, scale) )
+                plotlines =  self.get_plotlines()
+                line = plotlines[self.selected_line]
+                yynew = line.get_ydata()*scale
+                line.user_data['scale'] = line.user_data['scale']*scale
+                line.set_ydata(yynew)
+                # pass line data to snapped cursor to the selected line
+                self.snapped_cursor_update()
+            else:
+                # scaling y-axis
+                ylim = self.axes.get_ylim()
+                pos_y = event.ydata
+                yminlim = pos_y - scale*(pos_y-ylim[0])
+                ymaxlim = pos_y + scale*(ylim[1]-pos_y)
+                self.axes.set_ylim(yminlim, ymaxlim)
         self.draw_idle()
         # print("scrolling:")
         # print(event.step)
 
+    # pass line data to snapped cursor to the selected line
+    def snapped_cursor_update(self):
+        if (self.crosshair_cursor is not None):
+            if (self.selected_line is None):
+                self.crosshair_cursor.xx = None
+                self.crosshair_cursor.yy = None
+            else: 
+                plotlines = self.get_plotlines()
+                self.crosshair_cursor.xx, self.crosshair_cursor.yy = plotlines[self.selected_line].get_data()
+
     # add simpson data
-    def add_simpson_data(self, xdata , ydata, datalabel):
+    def add_simpson_data(self, xdata , ydata, datalabel, userdata):
         # xdata, ydata to display in Chart using plot
         # datalabel to be displayed in legend
         if self.legend_handle is None:
             # this is the first plot
-            self.axes.plot(xdata, ydata, lw=1, label=datalabel)
+            newline = self.axes.plot(xdata, ydata, lw=1, label=datalabel)
             self.axes.relim()
             self.axes.autoscale()
             # remember these axes limits
@@ -965,7 +990,7 @@ class MplCanvas(FigureCanvasQTAgg):
             ylims = self.axes.get_ylim()
             #print("original limits:",xlims,ylims)
             # plot additional line
-            self.axes.plot(xdata, ydata, lw=1, label=datalabel)
+            newline = self.axes.plot(xdata, ydata, lw=1, label=datalabel)
             # recalculate axes limits and store them as default (should capture all data lines)
             self.axes.relim()
             self.axes.autoscale()
@@ -976,6 +1001,7 @@ class MplCanvas(FigureCanvasQTAgg):
             self.axes.set_xlim(xlims)
             self.axes.set_ylim(ylims)
         # update legend and pick properties
+        newline[0].user_data = userdata
         self.update_legend()
         self.draw_idle()
         
@@ -1096,12 +1122,13 @@ class MplCanvas(FigureCanvasQTAgg):
                 # print("Text legend number:" + str(idx))
                 # print("     selected :", self.selected_line)
                 # pass line data to snapped cursor to the selected line
-                if (self.crosshair_cursor is not None):
-                    if (self.selected_line is None):
-                        self.crosshair_cursor.xx = None
-                        self.crosshair_cursor.yy = None
-                    else: 
-                        self.crosshair_cursor.xx, self.crosshair_cursor.yy = plotlines[self.selected_line].get_data()
+                self.snapped_cursor_update()
+                #if (self.crosshair_cursor is not None):
+                #    if (self.selected_line is None):
+                #        self.crosshair_cursor.xx = None
+                #        self.crosshair_cursor.yy = None
+                #    else: 
+                #        self.crosshair_cursor.xx, self.crosshair_cursor.yy = plotlines[self.selected_line].get_data()
         elif event.mouseevent.button == 3:
             # print("  --> right")
             if isinstance(event.artist, matplotlib.lines.Line2D):
@@ -1111,15 +1138,85 @@ class MplCanvas(FigureCanvasQTAgg):
                 # delete line
                 # print("right action on text")
                 idx = textlines.index(event.artist)
-                msg = "Delete " + plotlines[idx].get_label() + "?"
+                msg = "Delete " + plotlines[idx].get_label() + "?" 
+                # + str(plotlines[idx].user_data['scale'])
                 menu = QMenu()
-                menu.addAction(msg)
-                if menu.exec(QCursor.pos()):
+                ActDelete = menu.addAction(msg)
+                ActScale = menu.addAction("Set scale")
+                ActReIm = menu.addAction("Toggle Real/Imag")
+                action = menu.exec(QCursor.pos())
+                if action == ActDelete:
                     # print("Deleting")
                     self.delete_simpson_data(idx)
+                elif action == ActScale:
+                    # print("manege scale ")
+                    self.set_line_scaling(idx)
+                elif action == ActReIm:
+                    self.toggle_reim(idx)
                 else:
                     # print("canceling")
                     pass
+    
+    # set scaling of individual line in plot
+    def set_line_scaling(self, idx):
+        #print("manege scale of line %d" % idx)
+        plotlines = self.get_plotlines()
+        line = plotlines[idx]
+        yy = line.get_ydata()
+        # remove previous scaling
+        scale1 = line.user_data['scale']
+        yy = yy/scale1
+        # get new scaling factor
+        #scale2, completed = QInputDialog.getDouble(self, 'Line scaling', 'Enter new scaling factor:', scale1)
+        # the line above does the same as the following 7 lines, except here I can set Locale for decimal point (and not decimal comma as for czech locale...)
+        dlg = QInputDialog()
+        dlg.setWindowTitle('Line scaling');
+        dlg.setInputMode(QInputDialog.DoubleInput)
+        dlg.setLabelText('Enter new scaling factor: ')
+        dlg.setDoubleValue(scale1)
+        dlg.setLocale(QLocale(QLocale.English,QLocale.UnitedKingdom))
+        completed = dlg.exec()
+        # print(completed)
+        if not completed:
+            scale2 = scale1
+        else:
+            scale2 = dlg.doubleValue()
+        # apply new scaling
+        line.user_data['scale'] = scale2
+        yy = yy*scale2
+        line.set_ydata(yy)
+        # pass line data to snapped cursor to the selected line
+        self.snapped_cursor_update()
+        #if (self.crosshair_cursor is not None):
+        #    if (self.selected_line is None):
+        #        self.crosshair_cursor.xx = None
+        #        self.crosshair_cursor.yy = None
+        #    else: 
+        #         self.crosshair_cursor.xx, self.crosshair_cursor.yy = plotlines[self.selected_line].get_data()
+        # update figure
+        self.draw_idle()
+
+    # toggle if line shows real or imaginary part
+    def toggle_reim(self, idx):
+        print("toggle real / imag")
+        items = ["Real", "Imag"]
+        plotlines = self.get_plotlines()
+        line = plotlines[idx]
+        current = 0;
+        if line.user_data['show'] == "Imag":
+            current = 1
+        item, ok = QInputDialog().getItem(self,"Toggle Re/Im","Real or Imag?:", items, current, False)
+        if ok:
+            print("toggle re /im succsess")
+            if item == "Real":
+                yy = np.real(line.user_data['cplx_data']) * line.user_data['scale']
+                line.user_data['show'] = "Real"
+            else:
+                yy = np.imag(line.user_data['cplx_data']) * line.user_data['scale']
+                line.user_data['show'] = "Imag"
+            line.set_ydata(yy)
+            self.snapped_cursor_update()
+            self.draw_idle()
     
     # figure context menu activated by right-click outside axes
     def figure_context_menu(self):
@@ -1317,8 +1414,7 @@ def load_simpson_fidspe(fileName):
                     #print("Line >"+line+"< is ",ll)
                     info[ll[0]]=ll[1]
             #print(info)
-            re = []
-            im = []
+            cplx = []
             if 'NP' in info:
                 info['NP'] = int(info['NP'])
             else:
@@ -1336,8 +1432,7 @@ def load_simpson_fidspe(fileName):
                 line.strip()
                 line = line[:-1]
                 x,y = [float(i) for i in line.split()]
-                re.append(x)
-                im.append(y)
+                cplx.append(complex(x,y))
             file.close()            
     # if some error occured
     except Exception as e:
@@ -1360,10 +1455,9 @@ def load_simpson_fidspe(fileName):
             corr = 0
         else:
             print("Error: unknown TYPE ",info['TYPE'])
-        xx = [i*stx-corr for i in range(0,len(re))] #this must be repaired  
-        yy = re
+        xx = [i*stx-corr for i in range(0,len(cplx))] #this must be repaired  
         datatype = info['TYPE']
-    return xx, yy, datatype
+    return xx, cplx, datatype
 
 # execute the thing
 if __name__ == '__main__':
