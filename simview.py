@@ -12,6 +12,7 @@ SIMPSON_TCL_LIBRARY="C:\\data\\vypocty\\local\\simpson_win_10\\tcl8.6"
 SIMPSON_LD_LIBRARY_PATH=""
 SIMPSON_EXAMPLES_PATH="C:\\data\\workspace_before_2021\\simpson_GUI\\newer\\examples"
 LOCALE_ENCODING="cp852"  # to find out on windows, execute in cmd.exe command chcp
+EDITOR_FONT_SIZE=11
 
 #These settings worked flawlessly on a fresh Ubuntu 21.04 install
 
@@ -23,7 +24,7 @@ LOCALE_ENCODING="cp852"  # to find out on windows, execute in cmd.exe command ch
 
 from PyQt5.QtCore import Qt, QRegExp, QProcess, QLocale
 from PyQt5.QtGui import QFont, QSyntaxHighlighter, QTextCharFormat, QFontDatabase, QCursor, QKeySequence
-from PyQt5.QtWidgets import (QApplication, QMainWindow, QVBoxLayout, QPlainTextEdit, QLabel, QFrame, QSplitter, QToolBar, QCheckBox, QAction, QMessageBox, QFileDialog, QLineEdit, QMenu, QSizePolicy, QShortcut, QInputDialog)
+from PyQt5.QtWidgets import (QApplication, QMainWindow, QVBoxLayout, QPlainTextEdit, QLabel, QFrame, QSplitter, QToolBar, QCheckBox, QAction, QMessageBox, QFileDialog, QLineEdit, QMenu, QSizePolicy, QShortcut, QInputDialog, QDialog, QListWidget, QPushButton, QDoubleSpinBox)
 import sys, os, glob
 import matplotlib
 matplotlib.use('Qt5Agg')
@@ -54,7 +55,7 @@ class MainWindow(QMainWindow):
         # setting font to the editor
         # fixedfont = QFontDatabase.systemFont(QFontDatabase.FixedFont)
         fixedfont = QFont()
-        fixedfont.setPointSize(11)
+        fixedfont.setPointSize(EDITOR_FONT_SIZE)
         self.editor.setFont(fixedfont)
         # to indicate text change, call special function to indicate it in the title
         self.editor.document().modificationChanged.connect(self.editor_text_changed)
@@ -1185,6 +1186,10 @@ class MplCanvas(FigureCanvasQTAgg):
         dlg.setWindowTitle('Line scaling');
         dlg.setInputMode(QInputDialog.DoubleInput)
         dlg.setLabelText('Enter new scaling factor: ')
+        dlg.setDoubleRange(-1e12, 1e12)  # practically unlimited upper bound
+        #spin_box = dlg.findChild(QDoubleSpinBox)
+        #if spin_box:
+        #    spin_box.setDecimals(6)  # allow up to 6 decimal places
         dlg.setDoubleValue(scale1)
         dlg.setLocale(QLocale(QLocale.English,QLocale.UnitedKingdom))
         completed = dlg.exec()
@@ -1214,10 +1219,8 @@ class MplCanvas(FigureCanvasQTAgg):
         items = ["Real", "Imag"]
         plotlines = self.get_plotlines()
         line = plotlines[idx]
-        current = 0;
-        if line.user_data['show'] == "Imag":
-            current = 1
-        item, ok = QInputDialog().getItem(self,"Toggle Re/Im","Real or Imag?:", items, current, False)
+        current = line.user_data['show']
+        item, ok = ListSelectionDialog().getItem(self,"Toggle Re/Im","Real or Imag?:", items, current)
         if ok:
             print("toggle re /im succsess")
             if item == "Real":
@@ -1479,6 +1482,60 @@ def load_simpson_fidspe(fileName):
         xx = [i*stx-corr for i in range(0,len(cplx))] #this must be repaired  
         datatype = info['TYPE']
     return xx, cplx, datatype
+
+# Nice dialog for selection from list, all items visible
+class ListSelectionDialog(QDialog):
+    def __init__(self, parent=None, title="Select Item", question="", items=None, current_item=None):
+        super().__init__(parent)
+        self.setWindowTitle(title)
+        self.choice = None
+        items = items or []
+
+        layout = QVBoxLayout()
+        # Optional question label
+        if question:
+            self.label = QLabel(question)
+            self.label.setAlignment(Qt.AlignCenter)
+            layout.addWidget(self.label)
+        # List widget
+        self.list_widget = QListWidget()
+        self.list_widget.addItems(items)
+        layout.addWidget(self.list_widget, alignment=Qt.AlignCenter)
+        # adjust its sizes
+        item_count = self.list_widget.count()
+        height = self.list_widget.sizeHintForRow(0)*item_count + 2*self.list_widget.frameWidth() + 4 # extra padding
+        width = 0
+        for i in range(item_count):
+            item_width = self.list_widget.sizeHintForIndex(self.list_widget.model().index(i, 0)).width()
+            width = max(width, item_width)
+        width = width + 2 * self.list_widget.frameWidth() + 20 # padding + scrollbar space
+        self.list_widget.setFixedSize(width, height) 
+        # Preselect item if specified
+        if current_item and current_item in items:
+            index = items.index(current_item)
+            self.list_widget.setCurrentRow(index)
+        elif items:
+            self.list_widget.setCurrentRow(0)
+        # Push OK button
+        self.ok_button = QPushButton("OK")
+        self.ok_button.clicked.connect(self.confirm_selection)
+        layout.addWidget(self.ok_button, alignment=Qt.AlignCenter)
+        # finish the dialog
+        self.setLayout(layout)
+        self.setWindowModality(Qt.ApplicationModal)        
+
+    def confirm_selection(self):
+        item = self.list_widget.currentItem()
+        if item:
+            self.choice = item.text()
+        self.accept()  # closes the dialog
+
+    @staticmethod
+    def getItem(parent=None, title="Select Item", question="", items=None, current_item=None):
+        dialog = ListSelectionDialog(parent, title, question, items, current_item)
+        result = dialog.exec_()
+        return (dialog.choice, result == QDialog.Accepted)
+
 
 # execute the thing
 if __name__ == '__main__':

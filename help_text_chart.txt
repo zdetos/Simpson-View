@@ -22,3 +22,8 @@
   <br> - Left double click starts/cancels distance measurement
 <br><b> Reset Chart </b>
 <br> Using menu Chart -> Clear all lines
+<br><b> Line context menu </b>
+<br> Right click on text in legend
+ <br> - Delete line
+ <br> - Set scalling factor
+ <br> - Toggle real/imaginary
