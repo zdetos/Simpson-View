@@ -969,6 +969,7 @@ class MplCanvas(FigureCanvasQTAgg):
                 yminlim = pos_y - scale*(pos_y-ylim[0])
                 ymaxlim = pos_y + scale*(ylim[1]-pos_y)
                 self.axes.set_ylim(yminlim, ymaxlim)
+        self.update_legend()
         self.draw_idle()
         # print("scrolling:")
         # print(event.step)
@@ -1100,7 +1101,15 @@ class MplCanvas(FigureCanvasQTAgg):
                 leglines[idx].set_visible(True)
                 leglines[idx].set_alpha(0.2)
             if idx == self.selected_line:
-                legtexts[idx].set_text("*"+plotlines[idx].get_label())
+                legendlabel = "*"+plotlines[idx].get_label()
+            else:
+                legendlabel = plotlines[idx].get_label()
+            factor = plotlines[idx].user_data['scale']
+            if abs( factor - 1.0 ) > 0.0001: 
+                legendlabel = legendlabel + f" scl={factor:.2f}"
+            if plotlines[idx].user_data['show'] == "Imag" :
+                legendlabel = legendlabel + " Imag"
+            legtexts[idx].set_text(legendlabel)
     
     # handle mouse clicks on legend
     def legend_pick(self, event):
@@ -1130,12 +1139,12 @@ class MplCanvas(FigureCanvasQTAgg):
                 idx = textlines.index(legendtext)
                 if idx == self.selected_line:
                     self.selected_line = None
-                    legendtext.set_text(plotlines[idx].get_label())                    
+                    #legendtext.set_text(plotlines[idx].get_label())                    
                 else:
-                    if self.selected_line is not None:
-                        textlines[self.selected_line].set_text(plotlines[self.selected_line].get_label())
+                    #if self.selected_line is not None:
+                    #    textlines[self.selected_line].set_text(plotlines[self.selected_line].get_label())
                     self.selected_line = idx
-                    legendtext.set_text("*"+plotlines[idx].get_label())
+                    #legendtext.set_text("*"+plotlines[idx].get_label())
                 # print("Text legend number:" + str(idx))
                 # print("     selected :", self.selected_line)
                 # pass line data to snapped cursor to the selected line
@@ -1173,6 +1182,7 @@ class MplCanvas(FigureCanvasQTAgg):
                 else:
                     # print("canceling")
                     pass
+        self.update_legend()
     
     # set scaling of individual line in plot
     def set_line_scaling(self, idx):
