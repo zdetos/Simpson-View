@@ -32,12 +32,15 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
 import numpy as np
 
-
 class MainWindow(QMainWindow):
     
     # constructor
     def __init__(self, *args, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
+        
+        # get logical DPI of screen
+        screen = QApplication.primaryScreen()
+        current_dpi = screen.logicalDotsPerInch()
 
         # default values of global variables
         self.input_file_name = None
@@ -88,7 +91,7 @@ class MainWindow(QMainWindow):
         self.textsplitter.setSizes([600,200])
 
         # Create the maptlotlib FigureCanvas object,
-        self.canvas = MplCanvas(self, width=5, height=4, dpi=100)
+        self.canvas = MplCanvas(self, width=5, height=4, dpi=current_dpi)
         
         # layout of the central widget will be in a splitter container (horizontally)
         self.mainsplitter = QSplitter(Qt.Horizontal)
@@ -784,6 +787,7 @@ class MplCanvas(FigureCanvasQTAgg):
     def __init__(self, parent=None, width=5, height=4, dpi=100):
         self.fig = Figure(figsize=(width, height), dpi=dpi)
         self.axes = self.fig.add_subplot(111)
+        #self.axes.tick_params(labelsize=16)
         super(MplCanvas, self).__init__(self.fig)
 
         self.mpl_connect('button_press_event', self.mButtonPress)
@@ -1539,7 +1543,12 @@ class ListSelectionDialog(QDialog):
 
 # execute the thing
 if __name__ == '__main__':
-
+    # to handle screen resolution and matplotlib fonts
+    if hasattr(Qt, 'AA_EnableHighDpiScaling'):
+        QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)
+    if hasattr(Qt, 'AA_UseHighDpiPixmaps'):
+        QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
+        
     # creating PyQt5 application
     app = QApplication(sys.argv)
     # setting application name
